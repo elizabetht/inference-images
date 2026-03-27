@@ -15,10 +15,10 @@ Push a tag to trigger a build. Only the matching job runs.
 
 ```bash
 # Build vLLM image
-git tag vllm-v0.16.0 && git push origin vllm-v0.16.0
+git tag vllm-v0.0.1 && git push origin vllm-v0.0.1
 
 # Build SGLang image
-git tag sglang-v0.4.0 && git push origin sglang-v0.4.0
+git tag sglang-v0.0.1 && git push origin sglang-v0.0.1
 ```
 
 ## Structure
