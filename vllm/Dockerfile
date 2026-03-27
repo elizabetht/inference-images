@@ -43,7 +43,7 @@ ENV TORCH_USE_CUDA_DSA=0
 # Install vLLM from GitHub release (cu130 aarch64)
 RUN --mount=type=cache,target=/root/.cache/pip \
     /opt/venv/bin/pip install \
-      https://github.com/vllm-project/vllm/releases/download/v0.16.0/vllm-0.16.0+cu130-cp38-abi3-manylinux_2_35_aarch64.whl \
+      https://github.com/vllm-project/vllm/releases/download/v0.18.0/vllm-0.18.0+cu130-cp38-abi3-manylinux_2_35_aarch64.whl \
       --extra-index-url https://download.pytorch.org/whl/cu130
 
 # Install Ray explicitly — the cu130 vLLM wheel omits it, but PP=2 over Ray requires it
