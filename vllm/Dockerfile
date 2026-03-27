@@ -16,20 +16,8 @@ WORKDIR /app
 RUN python3.12 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Upgrade pip (use explicit path to ensure venv pip is used)
+# Upgrade pip
 RUN --mount=type=cache,target=/root/.cache/pip /opt/venv/bin/pip install --upgrade pip
-
-# Install PyTorch + CUDA (no cache to ensure we get cu130 version, not cpu)
-RUN /opt/venv/bin/pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
-
-# Install pre-release deps
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /opt/venv/bin/pip install xgrammar triton && \
-    /opt/venv/bin/pip install -U --pre flashinfer-python --index-url https://flashinfer.ai/whl/nightly --no-deps && \
-    /opt/venv/bin/pip install flashinfer-python && \
-    /opt/venv/bin/pip install -U --pre flashinfer-cubin --index-url https://flashinfer.ai/whl/nightly && \
-    /opt/venv/bin/pip install -U --pre flashinfer-jit-cache --index-url https://flashinfer.ai/whl/cu130 && \
-    /opt/venv/bin/pip install torchao>=0.14.0
 
 # Set essential environment variables
 ENV TORCH_CUDA_ARCH_LIST="12.1a"
@@ -40,15 +28,27 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 RUN ln -s /usr/local/cuda/lib64/libcudart.so.13 /usr/local/cuda/lib64/libcudart.so.12
 ENV TORCH_USE_CUDA_DSA=0
 
-# Install vLLM from GitHub release (cu130 aarch64)
+# Install vLLM from GitHub release (cu130 aarch64).
+# Use pytorch cu130 as primary index so torch resolves to the exact CUDA build
+# vLLM was compiled against; pypi.org as extra for everything else.
 RUN --mount=type=cache,target=/root/.cache/pip \
     /opt/venv/bin/pip install \
       https://github.com/vllm-project/vllm/releases/download/v0.18.0/vllm-0.18.0+cu130-cp38-abi3-manylinux_2_35_aarch64.whl \
-      --extra-index-url https://download.pytorch.org/whl/cu130
+      --index-url https://download.pytorch.org/whl/cu130 \
+      --extra-index-url https://pypi.org/simple
 
 # Install Ray explicitly — the cu130 vLLM wheel omits it, but PP=2 over Ray requires it
 RUN --mount=type=cache,target=/root/.cache/pip \
     /opt/venv/bin/pip install "ray[default]>=2.9,!=2.10.0"
+
+# Install additional inference deps (torch already pinned by vLLM above)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /opt/venv/bin/pip install xgrammar triton && \
+    /opt/venv/bin/pip install -U --pre flashinfer-python --index-url https://flashinfer.ai/whl/nightly --no-deps && \
+    /opt/venv/bin/pip install flashinfer-python && \
+    /opt/venv/bin/pip install -U --pre flashinfer-cubin --index-url https://flashinfer.ai/whl/nightly && \
+    /opt/venv/bin/pip install -U --pre flashinfer-jit-cache --index-url https://flashinfer.ai/whl/cu130 && \
+    /opt/venv/bin/pip install torchao>=0.14.0
 
 # Pre-cache HarmonyGptOss vocab (identical to o200k_base — confirmed same SHA256)
 RUN mkdir -p /opt/tiktoken-cache && \
@@ -60,9 +60,6 @@ RUN mkdir -p /opt/tiktoken-cache && \
 
 ENV TIKTOKEN_RS_CACHE_DIR=/opt/tiktoken-cache
 ENV TIKTOKEN_ENCODINGS_BASE=http://127.0.0.1:18889
-
-# Force reinstall PyTorch with CUDA after vLLM (vLLM pulls in CPU torch)
-RUN /opt/venv/bin/pip install --no-cache-dir --force-reinstall --no-deps torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 
 # Clean up build artifacts
 RUN rm -rf /tmp/*
