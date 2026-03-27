@@ -50,16 +50,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     /opt/venv/bin/pip install -U --pre flashinfer-jit-cache --index-url https://flashinfer.ai/whl/cu130 && \
     /opt/venv/bin/pip install torchao>=0.14.0
 
-# Pre-cache HarmonyGptOss vocab (identical to o200k_base — confirmed same SHA256)
-RUN mkdir -p /opt/tiktoken-cache && \
-    wget -q "https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken" \
-         -O /opt/tiktoken-cache/HarmonyGptOss.tiktoken && \
-    cp /opt/tiktoken-cache/HarmonyGptOss.tiktoken \
-       "/opt/tiktoken-cache/446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d" && \
-    echo "446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d  /opt/tiktoken-cache/HarmonyGptOss.tiktoken" | sha256sum -c
-
-ENV TIKTOKEN_RS_CACHE_DIR=/opt/tiktoken-cache
-ENV TIKTOKEN_ENCODINGS_BASE=http://127.0.0.1:18889
 
 # Clean up build artifacts
 RUN rm -rf /tmp/*
