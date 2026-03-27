@@ -36,6 +36,8 @@ ENV TORCH_CUDA_ARCH_LIST="12.1a"
 ENV TRITON_PTXAS_PATH=/usr/local/cuda/bin/ptxas
 ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+# vLLM cu130 wheels link against libcudart.so.12 but CUDA 13.0 ships libcudart.so.13
+RUN ln -s /usr/local/cuda/lib64/libcudart.so.13 /usr/local/cuda/lib64/libcudart.so.12
 ENV TORCH_USE_CUDA_DSA=0
 
 # Install vLLM from PyPI (this will install CPU torch)
