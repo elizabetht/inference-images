@@ -13,22 +13,8 @@ permissions:
 jobs:
   build-vllm:
     if: startsWith(github.ref_name, 'vllm-v')
-    runs-on: [self-hosted, DGX-Spark]
+    runs-on: arc-inference-images
     steps:
-      - name: Install and start docker
-        run: |
-          if ! command -v docker &> /dev/null; then
-            sudo apt-get install -y docker.io
-          fi
-          sudo systemctl start docker || sudo systemctl status docker
-          sudo usermod -aG docker $USER || true
-
-      - name: Free up disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache || true
-          sudo rm -rf /usr/local/share/boost /usr/share/swift /opt/microsoft /opt/az || true
-          docker system prune -af --volumes || true
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -67,22 +53,8 @@ jobs:
 
   build-sglang:
     if: startsWith(github.ref_name, 'sglang-v')
-    runs-on: [self-hosted, DGX-Spark]
+    runs-on: arc-inference-images
     steps:
-      - name: Install and start docker
-        run: |
-          if ! command -v docker &> /dev/null; then
-            sudo apt-get install -y docker.io
-          fi
-          sudo systemctl start docker || sudo systemctl status docker
-          sudo usermod -aG docker $USER || true
-
-      - name: Free up disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache || true
-          sudo rm -rf /usr/local/share/boost /usr/share/swift /opt/microsoft /opt/az || true
-          docker system prune -af --volumes || true
-
       - name: Checkout
         uses: actions/checkout@v4
 
