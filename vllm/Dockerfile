@@ -29,13 +29,19 @@ RUN ln -s /usr/local/cuda/lib64/libcudart.so.13 /usr/local/cuda/lib64/libcudart.
 ENV TORCH_USE_CUDA_DSA=0
 
 # Install vLLM from GitHub release (cu130 aarch64).
+# v0.19.0 adds full Gemma 4 support (MoE, multimodal, reasoning, tool-use).
+# Requires transformers>=5.5.0 for Gemma 4 architecture.
 # Use pytorch cu130 as primary index so torch resolves to the exact CUDA build
 # vLLM was compiled against; pypi.org as extra for everything else.
 RUN --mount=type=cache,target=/root/.cache/pip \
     /opt/venv/bin/pip install \
-      https://github.com/vllm-project/vllm/releases/download/v0.18.0/vllm-0.18.0+cu130-cp38-abi3-manylinux_2_35_aarch64.whl \
+      https://github.com/vllm-project/vllm/releases/download/v0.19.0/vllm-0.19.0+cu130-cp38-abi3-manylinux_2_35_aarch64.whl \
       --index-url https://download.pytorch.org/whl/cu130 \
       --extra-index-url https://pypi.org/simple
+
+# Gemma 4 requires transformers>=5.5.0
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /opt/venv/bin/pip install "transformers>=5.5.0"
 
 # Install Ray explicitly — the cu130 vLLM wheel omits it, but PP=2 over Ray requires it
 RUN --mount=type=cache,target=/root/.cache/pip \
