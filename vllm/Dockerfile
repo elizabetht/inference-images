@@ -65,6 +65,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
+LABEL org.opencontainers.image.version="v1.0.0"
+LABEL org.opencontainers.image.description="vLLM v0.19.0 — Gemma 4 support, GB10/sm_121 ARM64"
+
 EXPOSE 8000
 
 ENTRYPOINT ["vllm", "serve"]
